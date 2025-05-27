@@ -1,50 +1,69 @@
-# Welcome to your Expo app 👋
+# HVAC Audit App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A modern mobile solution built with **React Native** to digitize and streamline HVAC asset audits. This app simplifies how HVAC inspection data is captured, tracked, and reviewed—making it easier for engineers, technicians, and auditors to manage large-scale facility audits efficiently.
 
-## Get started
+---
 
-1. Install dependencies
+## 📱 Tech Stack
 
-   ```bash
-   npm install
-   ```
+- **Framework**: React Native (with Expo SDK 53)
+- **Navigation**: Expo Router
+- **Styling**: Tailwind CSS (via NativeWind)
+- **State Management**: useState, useEffect
+- **Icons**: Expo Vector Icons
+- **Font Loading**: expo-font
+- **Local Data (Dev Mode)**: Static mock JSON
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## 🎯 Why I Built This App
 
-In the output, you'll find options to open the app in a
+As part of a real-world client project, I developed this app to replace outdated, manual HVAC inspection methods. The goal is to help companies conduct audits faster and more accurately, with a digital system that could scale across multiple teams and locations. 
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+It’s also a showcase of my ability to solve real business problems through practical app development, and I plan to market this solution to other HVAC auditing firms.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+---
 
-## Get a fresh project
+## 🛠️ Features
 
-When you're ready, run:
+### ✅ Core Screens
+- **Login/Register**: Secure entry with future plans for Firebase Authentication
+- **Dashboard**: View active assets and their operational status
+- **Reports**: Browse previous audits and track progress (Completed/In Progress)
+- **New Audit**: Create a detailed HVAC audit entry
+- **Info Page**: Overview of the app and usage instructions
+- **Settings (Profile)**: View and manage user profile information
 
-```bash
-npm run reset-project
-```
+### 📄 Report Functionality
+- List audit records by building, date, asset status, and condition
+- Real-time indication of operational vs non-operational assets
+- Future support for editable audits
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## 🔄 Future Development
 
-To learn more about developing your project with Expo, look at the following resources:
+This project will include a Firebase backend once the final scope is received from the client. This will include:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Firebase Authentication
+- Firestore Database integration
+- Audit syncing and real-time updates
+- Admin panel/dashboard (potential Phase 2)
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## 🚀 Status
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+✅ Frontend Complete  
+⏳ Backend Awaiting Client Scope  
+
+---
+
+## 🤝 Contact
+
+**Developer:** Dean Meyer  
+📧 meyerdean.developer@gmail.com  
+🔗 [LinkedIn](https://www.linkedin.com/in/dean-meyer-dev)  
+🌐 [Portfolio](https://meyer-d3v.github.io)
+
+---
