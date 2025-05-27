@@ -63,7 +63,7 @@ This project will include a Firebase backend once the final scope is received fr
 
 **Developer:** Dean Meyer  
 📧 meyerdean.developer@gmail.com  
-🔗 [LinkedIn](https://www.linkedin.com/in/dean-meyer-dev)  
-🌐 [Portfolio](https://meyer-d3v.github.io)
+🔗 [LinkedIn](https://www.linkedin.com/in/dean-meyer-385342247/)  
+🌐 [Portfolio](https://meyer-dev.netlify.app/)
 
 ---
