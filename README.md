@@ -29,9 +29,7 @@ Whether used in a commercial building, server room, or industrial environment, t
 
 - **Framework**: React Native (with Expo SDK 53)
 - **TypeScript**
-- **Firebase**
-    - Firebase Authentication
-    - Firestore Database
+- **Firebase**: Firestore Database
 - **Navigation**: Expo Router
 - **Styling**: Tailwind CSS (via NativeWind)
 - **State Management**: useState, useEffect
@@ -45,15 +43,13 @@ Whether used in a commercial building, server room, or industrial environment, t
 
 /components         → Reusable UI components (e.g., Cards, Headers)
 
-/screens            → App screens (Welcome, Login, Register, Dashboard, Audit Form)
-
-/firebase           → Firebase config & Firestore logic
+/app , /app/(tabs)  → App screens (Welcome, Login, Register, Dashboard, Audit Form)
 
 /assets             → Fonts, icons, and the custom Meyer.dev logo
 
 /utils              → Sample mock data & helpers
 
-App.tsx             → Entry point with navigation
+/app/index.tsx      → Entry point with navigation
 
 ---
 
@@ -86,7 +82,7 @@ You can scan the QR code with **Expo Go** to test the app on your physical devic
 1. Create a Firebase project at https://console.firebase.google.com
 2. Enable **Authentication (Email/Password)**
 3. Create a **Firestore** database
-4. Add your Firebase config to `/firebase/firebaseConfig.ts`
+4. Add your Firebase config to the root folder
 5. Ensure Firebase rules are set to allow authenticated reads/writes
 
 ---
