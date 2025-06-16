@@ -1,12 +1,19 @@
 import { router } from 'expo-router';
 import { Image, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { userData } from "../../data/userData";
+import { useUser } from "@/context/userContext";
+
 
 export default function TabTwoScreen() {
+
+  const userContext = useUser();
+  const user = userContext?.user;
 
   const handleLogOut = () => {
     router.replace("/login");
   };
+
+  
 
 
   return (
@@ -27,13 +34,13 @@ export default function TabTwoScreen() {
           />
       </View>
 
-      <Text style={styles.nameText}>{userData[0]?.firstName} {userData[0]?.lastName}</Text>
+      <Text style={styles.nameText}>{user?.name ?? "Guest"}</Text>
 
       <View style={styles.informationContainer}>
         <Text style={styles.emailTextHeader}>Email: </Text>
-        <Text style={styles.emailText}>{userData[0].email}</Text>
+        <Text style={styles.emailText}>{user?.email ?? "No email"}</Text>
         <Text style={styles.numberTextHeader}>Phone number: </Text>
-        <Text style={styles.numberText}>{userData[0].number}</Text>
+        <Text style={styles.numberText}>{user?.number ?? "No number"}</Text>
       </View>
 
       

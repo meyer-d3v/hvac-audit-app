@@ -1,61 +1,112 @@
-# HVAC Audit App
+# HVAC Audit App 📋❄️
 
-A modern mobile solution built with **React Native** to digitize and streamline HVAC asset audits. This app simplifies how HVAC inspection data is captured, tracked, and reviewed—making it easier for engineers, technicians, and auditors to manage large-scale facility audits efficiently.
+A modern mobile app for conducting and managing HVAC asset audits, built with **React Native**, **Expo SDK 53**, and **Firebase**. Developed by Meyer.dev.
 
 ---
 
-## 📱 Tech Stack
+## 🧩 Overview
+
+This app was created to streamline HVAC audit workflows for field technicians and facilities managers. It digitizes traditional HVAC audit reports, enabling real-time asset tracking, audit submissions, and report access — all from a mobile device.
+
+Whether used in a commercial building, server room, or industrial environment, this app helps auditors quickly capture asset data, view statuses, and monitor conditions.
+
+---
+
+## 🚀 Features
+
+- 🔐 **User Authentication** – Secure login & registration using Firebase Auth.
+- 🏢 **Audit Dashboard** – View all submitted audits by condition, status, date, and location.
+- 📝 **Create New Audit** – Fill in audit details and save them to Firebase Firestore.
+- 📦 **Asset Condition Tracking** – Displays operational status and critical alerts.
+- ⚙️ **Real-Time Firestore Integration** – Instant save/load of audits.
+- 🧠 **Built with TypeScript** – For better scalability and maintainability.
+- 📱 **Optimized for Tablets and Phones** – Field-friendly UI for inspectors and engineers.
+- 🎨 **Custom Branding** – Designed with a minimalist logo and a clean interface (Meyer.dev).
+
+---
+
+## 🛠️ Tech Stack
 
 - **Framework**: React Native (with Expo SDK 53)
+- **TypeScript**
+- **Firebase**
+    - Firebase Authentication
+    - Firestore Database
 - **Navigation**: Expo Router
 - **Styling**: Tailwind CSS (via NativeWind)
 - **State Management**: useState, useEffect
 - **Icons**: Expo Vector Icons
 - **Font Loading**: expo-font
-- **Local Data (Dev Mode)**: Static mock JSON
+
 
 ---
 
-## 🎯 Why I Built This App
+## 📂 Project Structure
 
-As part of a real-world client project, I developed this app to replace outdated, manual HVAC inspection methods. The goal is to help companies conduct audits faster and more accurately, with a digital system that could scale across multiple teams and locations. 
+/components         → Reusable UI components (e.g., Cards, Headers)
 
-It’s also a showcase of my ability to solve real business problems through practical app development, and I plan to market this solution to other HVAC auditing firms.
+/screens            → App screens (Welcome, Login, Register, Dashboard, Audit Form)
 
----
+/firebase           → Firebase config & Firestore logic
 
-## 🛠️ Features
+/assets             → Fonts, icons, and the custom Meyer.dev logo
 
-### ✅ Core Screens
-- **Login/Register**: Secure entry with future plans for Firebase Authentication
-- **Dashboard**: View active assets and their operational status
-- **Reports**: Browse previous audits and track progress (Completed/In Progress)
-- **New Audit**: Create a detailed HVAC audit entry
-- **Info Page**: Overview of the app and usage instructions
-- **Settings (Profile)**: View and manage user profile information
+/utils              → Sample mock data & helpers
 
-### 📄 Report Functionality
-- List audit records by building, date, asset status, and condition
-- Real-time indication of operational vs non-operational assets
-- Future support for editable audits
+App.tsx             → Entry point with navigation
 
 ---
 
-## 🔄 Future Development
+## ⚙️ Setup Instructions
 
-This project will include a Firebase backend once the final scope is received from the client. This will include:
+> Make sure you have Node.js, Expo CLI, and Firebase Project Credentials set up.
+> 
 
-- Firebase Authentication
-- Firestore Database integration
-- Audit syncing and real-time updates
-- Admin panel/dashboard (potential Phase 2)
+```bash
+# 1. Clone the repository
+git clone <https://github.com/meyer-dev/hvac-audit-app.git>
+
+# 2. Navigate to project
+cd hvac-audit-app
+
+# 3. Install dependencies
+npm install
+
+# 4. Start the Expo server
+npx expo start
+
+```
+
+You can scan the QR code with **Expo Go** to test the app on your physical device.
 
 ---
 
-## 🚀 Status
+## 🔐 Firebase Setup
 
-✅ Frontend Complete  
-⏳ Backend Awaiting Client Scope  
+1. Create a Firebase project at https://console.firebase.google.com
+2. Enable **Authentication (Email/Password)**
+3. Create a **Firestore** database
+4. Add your Firebase config to `/firebase/firebaseConfig.ts`
+5. Ensure Firebase rules are set to allow authenticated reads/writes
+
+---
+
+## 📸 Screenshots
+
+> (Replace with your actual app screenshots or add links)
+> 
+- Welcome Screen
+- Login/Register
+- Dashboard with audits
+- Create New Audit Form
+
+---
+
+## 🧾 Business Use
+
+This app is available for licensing and customization for HVAC, mechanical engineering, and facilities management companies.
+
+If you're interested in using it for your operations or want a custom version, reach out via LinkedIn or email.
 
 ---
 
@@ -67,3 +118,13 @@ This project will include a Firebase backend once the final scope is received fr
 🌐 [Portfolio](https://meyer-dev.netlify.app/)
 
 ---
+
+## 📜 License
+
+This project is protected and intended for client or educational use. Please do not resell, duplicate, or claim the code as your own without permission.
+
+---
+
+## ⭐️ Support My Work
+
+If this project inspired you or helped you, feel free to leave a ⭐ on the repo!

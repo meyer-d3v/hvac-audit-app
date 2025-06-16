@@ -1,14 +1,22 @@
 import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { db } from "../firebase";
 
 export default function TabTwoScreen() {
 
+  const { auditId } = useLocalSearchParams();
+
+  console.log(auditId);
+
   const goBack = () => {
 
-    router.push("/(tabs)/dashboard");
+    alert("You are about to leave the page and data won't be saved.");
+
+    router.push("/(tabs)/new-audit");
 
   };
 
@@ -26,29 +34,101 @@ export default function TabTwoScreen() {
   const [valueStatus, setValueStatus] = useState(null);
   const [itemsStatus, setItemsStatus] = useState([
     { label: 'Operational', value: 'operational' },
-    { label: 'Not Operational', value: 'not_operational' },
+    { label: 'Not Operational', value: 'not-operational' },
   ]);
 
   const uploadFiles = () => {
       console.log("User wants to upload some files.");
   };
 
-  const createAudit = () => {
-      console.log("User wants to save the data from the inputs");
-  };
-
   const saveDraft = () => {
-      console.log("User wants to save the data as a draft");
+      console.log("User wants to go to the dashboard.");
+      alert("Audit will remain as 'In progress'.");
+      router.replace("/(tabs)/dashboard");
   };
 
-  const [getData, setData] = useState("");
+  const saveCompleted = async () => {
+      console.log("User wants to save the data as a draft");
+
+      const getAudit = doc(db, "audits", Array.isArray(auditId) ? auditId[0] : auditId as string);
+
+      try{
+
+        await updateDoc(getAudit, {
+          status: "Completed",
+        });
+
+      } catch (error) {
+        console.log("Error updating audit to 'completed'.");
+        console.log(error);
+      }
+
+
+
+      router.push("/(tabs)/dashboard");
+
+  };
+
+  const [equipmentName, setEquipmentName] = useState("");
+  //const [location, setLocation] = useState("");
+  const [model, setModel] = useState("");
+  const [serialNumber, setSerialNumber] = useState("");
+  //const [assetCondition, setAssetCondition] = useState("");
+  //const [status, setStatus] = useState("");
+  const equipmentCondition = valueCondition;
+  const status = valueStatus;
+  const [budget, setBudget] = useState("");
+  const [notes, setNotes] = useState("");
+  const [attachments, setAttachments] = useState("");
+
+  const createAudit = async () => {
+
+    //TODO: add validation, add spinner 
+
+    try{
+
+        await addDoc(collection(db, 'equipment'), {
+        'equipmentName': equipmentName,
+        //'location': location,
+        'model': model,
+        'serialNumber': serialNumber,
+        'equipmentCondition': equipmentCondition,
+        'status': status,
+        'budget': budget,
+        'notes': notes,
+        'auditId': auditId,
+        //'createdDate': new Date(),
+      });
+
+      //const audit = await query(collection(db, "audits"), where("id", "==", auditId));
+
+
+      alert(equipmentName + " has been added.");
+      
+      setEquipmentName("");
+      //setLocation("");
+      setModel("");
+      setSerialNumber("");;
+      setValueCondition(null);
+      setValueStatus(null);
+      setBudget("");
+      setNotes("");
+      
+
+
+    } catch (error) {
+      console.error("Could not add equipment.");
+      console.error("Error: " + error);
+      alert("Error adding equipment. Error: " + error);
+    }
+  }
 
 
 
 
   return (
 
-    <ScrollView style={styles.mainContainer}>
+    <ScrollView style={styles.mainContainer} nestedScrollEnabled={true}>
 
       <Pressable
               onPress={goBack}
@@ -69,17 +149,19 @@ export default function TabTwoScreen() {
 
       <View style={styles.inputContainer}>
 
-        <Text style={styles.inputText}>Asset name *</Text>
+        <Text style={styles.inputText}>Equipment name *</Text>
 
         <TextInput
                   style={styles.input}
                   placeholder="e.g. Rooftop HVAC Unit 1"
                   placeholderTextColor="#919191"
-                  //value={email}
-                  //onChangeText={setEmail}
+                  value={equipmentName}
+                  onChangeText={setEquipmentName}
                   />
 
       </View>
+
+      {/* 
 
       <View style={styles.inputContainer}>
 
@@ -89,11 +171,13 @@ export default function TabTwoScreen() {
                   style={styles.input}
                   placeholder="e.g. Building A, Floor 3"
                   placeholderTextColor="#919191"
-                  //value={email}
-                  //onChangeText={setEmail}
+                  value={location}
+                  onChangeText={setLocation}
                   />
 
       </View>
+
+      */}
 
       <View style={styles.dualInputContainer}>
 
@@ -105,8 +189,8 @@ export default function TabTwoScreen() {
                       style={styles.input}
                       placeholder="e.g. XYZ-1000"
                       placeholderTextColor="#919191"
-                      //value={email}
-                      //onChangeText={setEmail}
+                      value={model}
+                      onChangeText={setModel}
                       />
 
             
@@ -121,8 +205,8 @@ export default function TabTwoScreen() {
                       style={styles.input}
                       placeholder="e.g. SN12345678"
                       placeholderTextColor="#919191"
-                      //value={email}
-                      //onChangeText={setEmail}
+                      value={serialNumber}
+                      onChangeText={setSerialNumber}
                       />
           
         </View>
@@ -176,8 +260,8 @@ export default function TabTwoScreen() {
                   style={styles.input}
                   placeholder="e.g. 5000"
                   placeholderTextColor="#919191"
-                  //value={email}
-                  //onChangeText={setEmail}
+                  value={budget}
+                  onChangeText={setBudget}
                   />
 
       </View>
@@ -190,8 +274,8 @@ export default function TabTwoScreen() {
                   style={styles.input}
                   placeholder="Add relevant details about the system..."
                   placeholderTextColor="#919191"
-                  //value={email}
-                  //onChangeText={setEmail}
+                  value={notes}
+                  onChangeText={setNotes}
                   />
 
       </View>
@@ -220,7 +304,15 @@ export default function TabTwoScreen() {
       <Pressable onPress={createAudit} style={styles.createAuditButton}>
       
       
-          <Text style={styles.createAuditText}>Create Audit</Text>
+          <Text style={styles.createAuditText}>Add equipment</Text>
+      
+      
+      </Pressable>
+
+      <Pressable onPress={saveCompleted} style={styles.saveCompletedButton}>
+      
+      
+          <Text style={styles.saveCompletedText}>Finish Audit</Text>
       
       
       </Pressable>
@@ -228,7 +320,7 @@ export default function TabTwoScreen() {
       <Pressable onPress={saveDraft} style={styles.saveDraftButton}>
       
       
-          <Text style={styles.saveDraftText}>Save as Draft</Text>
+          <Text style={styles.saveDraftText}>Save Audit as Draft</Text>
       
       
       </Pressable>
@@ -277,7 +369,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignSelf : "center",
     justifyContent: "space-evenly",
-    marginBottom: 30,
+    marginBottom: 40,
  },
  inputContainerDual: {
     width: "42%",
@@ -305,6 +397,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlignVertical: "center",
     backgroundColor: "#ffffff",
+    flexWrap: "wrap",
+    wordWrap: "wrap",
  },
   dualInputContainer: {
     display: "flex",
@@ -373,7 +467,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1e88e5",
     color: "#ffffff",
     fontSize: 20,
-    width: "80%",
+    width: "90%",
     marginHorizontal: 30,
     display: "flex",
     justifyContent: "center",
@@ -388,8 +482,8 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 20, 
   },
-  saveDraftButton: {
-    width: "80%",
+  saveCompletedButton: {
+    width: "90%",
     marginHorizontal: 30,
     display: "flex",
     justifyContent: "center",
@@ -401,10 +495,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     height: 55,
-    marginBottom: 25,
+    marginBottom: 105,
+    backgroundColor: "#5be827",
+  },
+  saveCompletedText: {
+    color: "#ffffff",
+    fontSize: 20,
+  },
+  saveDraftButton: {
+    width: "90%",
+    marginHorizontal: 30,
+    display: "flex",
+    justifyContent: "center",
+    textAlign: "center",
+    alignContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+    borderColor: "#1e88e5",
+    borderWidth: 1,
+    borderRadius: 10,
+    height: 55,
+    marginBottom: 105,
   },
   saveDraftText: {
     color: "#1e88e5",
-    fontSize: 16,
+    fontSize: 20,
   },
 });

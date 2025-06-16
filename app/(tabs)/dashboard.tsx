@@ -1,10 +1,33 @@
 import Feather from '@expo/vector-icons/Feather';
+import { collection, getDocs } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
-import { dashboardData, sampleAudits, sampleAssetsData } from "../../data/dashboardData";
+import Toast from 'react-native-toast-message';
+import { db } from "../../firebase";
 
 
 
 export default function TabTwoScreen() {
+
+  /*
+  const { encodedData } = useLocalSearchParams();
+  const decodedData =
+    typeof encodedData === "string"
+      ? JSON.parse(decodeURIComponent(encodedData))
+      : Array.isArray(encodedData) && encodedData.length > 0
+      ? JSON.parse(decodeURIComponent(encodedData[0]))
+      : [];
+  
+
+      */
+
+  //setting dashboard data to audits
+  const [dashboardMockData, setDashboard] = useState<{ id: string; [key: string]: any }[]>([]);
+  const [sampleAssets, setSampleAssets] = useState<{ id: string; [key: string]: any }[]>();
+  const [audits, setAudits] = useState<{ id: string; [key: string]: any }[]>();
+
+  //getting and setting icons state
+  const [iconState, setIconState] = useState(false);
 
 
   const getStatusBackground = (colorStats: string) => {
@@ -23,11 +46,193 @@ export default function TabTwoScreen() {
     }
   }
 
+  //getting dashboard overall data
+  useEffect(() => {
+
+    const getDashBoardData = async () => {
+
+
+      try{
+
+        const q = await getDocs(collection(db, 'dashboardData'));
+
+        const dashboard: { id: string; [key: string]: any }[] = [];
+
+
+        /*
+        q.docs.forEach((doc) => {
+          //const auditData = doc.data();
+          dashboard.push({id: doc.id, ...doc.data() });
+        });
+        */
+
+        for (const doc of q.docs) {
+          dashboard.push({id: doc.id, ...doc.data() });
+        }
+
+
+        
+
+        setDashboard(dashboard);
+        console.log(dashboardMockData.length);
+
+      } catch(error) {
+        alert("Error getting data. " + error)
+      }
+
+    }
+
+    getDashBoardData();
+    
+    }, []);
+
+
+useEffect(() => {
+
+  const getDashBoardInfo = async () => {
+
+    try{
+
+      const query = await getDocs(collection(db, 'sampleAssetsData'));
+
+      const assets: { id: string; [key: string]: any }[] = [];
+
+
+      query.docs.forEach((doc) => {
+        //const auditData = doc.data();
+        assets.push({id: doc.id, ...doc.data() });
+      });
+
+
+
+      
+
+      setSampleAssets(assets);
+      console.log(assets.length);
+
+    } catch(error) {
+      alert("Error getting data. " + error)
+    }
+
+  }
+
+  getDashBoardInfo();
+  
+  }, []);
+  
+
+
+  useEffect(() => {
+
+    const getAudits = async () => {
+
+        try{
+
+            const q = await getDocs(collection(db, 'audits'));
+        
+
+            if (q.empty) {
+
+                alert("There are no audits this far.");
+                console.log("There are no audits this far.");
+                return;
+              
+            };
+
+
+            const audits : { id: string; [key: string]: any }[] = [];
+
+            q.docs.forEach((doc) => {
+              
+              if (audits.length < 3) {
+                audits.push({id: doc.id, ...doc.data()});
+                console.log(doc.id);
+              }
+
+            });
+
+
+            setAudits(audits);
+
+
+        } catch (error) {
+
+          Toast.show({
+              type: 'error',
+              text1: 'Error getting audits.',
+              position: 'top',
+          })
+        }
+
+        
+    }
+
+
+    getAudits();
+
+
+  }, []);
+
+
+
+
+  //function used to send sample data to db
+  /*
+
+  const addDataToDB = async () => {
+
+    alert("pressed");
+    console.log(audits.length);
+    
+    console.log("Trying to upload data to db");
+
+    for (const data of sampleAudit) {
+      try{
+            await addDoc(collection(db, 'sampleAudits'), data);
+            console.log("Audit: has been logged.");
+            alert("Audit: has been logged.");
+          } catch (error) {
+            console.log("Error occured. Error: " + error + ". Data: was not saved.");
+            alert("Error occured. Error: " + error + ". Data: was not saved.");
+          }
+
+    }
+    
+  }
+
+  //loading icons
+  useEffect(() => {
+
+    const loadIcons = async () => {
+
+      try{
+
+        await Font.loadAsync ({
+
+          Feather: Feather.font,
+
+        });
+
+        setIconState(true);
+
+      } catch (error) {
+
+        console.error("Error loading icons. Error: " + error);
+
+      }
+    }
+
+    loadIcons();
+  }, []);
+
+*/
+  
+ 
   return (
     <View style={styles.mainContainer}>
 
       <Text style={styles.dashboardText}>HVAC Audit Dashboard</Text>
-
+      
       <View style={[styles.overviewContainer, styles.marginTopContainer]}>
 
         <View style={styles.dashContainer}>
@@ -37,7 +242,7 @@ export default function TabTwoScreen() {
             </View>
             <View style={styles.displayData}>
               <Text style={styles.displayDataText}>Total Audits:</Text>
-              <Text style={styles.data}>{dashboardData.totalAudits}</Text>
+              <Text style={styles.data}>{dashboardMockData[0]?.totalAudits ?? "Loading..."}</Text>
             </View>
 
         </View>
@@ -49,7 +254,7 @@ export default function TabTwoScreen() {
             </View>
             <View style={styles.displayData}>
               <Text style={styles.displayDataText}>Need Attention:</Text>
-              <Text style={styles.data}>{dashboardData.needAttention}</Text>
+              <Text style={styles.data}>{dashboardMockData[0]?.needAttention ?? "Loading..."}</Text>
             </View>
         </View>
 
@@ -63,8 +268,8 @@ export default function TabTwoScreen() {
               <Feather name="dollar-sign" size={32} color="#00C81B" />
             </View>
             <View style={styles.displayData}>
-              <Text style={styles.displayDataText}>Budget Used:</Text>
-              <Text style={styles.data}>R{dashboardData.budgetUsed}</Text>
+              <Text style={styles.displayDataText}>Budget Used: (R)</Text>
+              <Text style={styles.data}>{dashboardMockData[0]?.budgetUsed ?? "Loading..."}</Text>
             </View>
 
         </View>
@@ -76,7 +281,7 @@ export default function TabTwoScreen() {
             </View>
             <View style={styles.displayData}>
               <Text style={styles.displayDataText}>Recent Updates:</Text>
-              <Text style={styles.data}>{dashboardData.recentUpdates}</Text>
+              <Text style={styles.data}>{dashboardMockData[0]?.recentUpdates ?? "Loading..."}</Text>
             </View>
 
         </View>
@@ -87,19 +292,21 @@ export default function TabTwoScreen() {
 
 
       <FlatList
-        data={sampleAssetsData}
+        data={sampleAssets}
+        //data={(sampleAssets && sampleAssets.length > 0) ? sampleAssets : decodedData}
+        //data={audits}
         keyExtractor={(item) => item.id}
         style={styles.flatlistContainer}
         renderItem={({item}) => (
           <View style={styles.recentsContainer}>
-            <Text style={styles.listHeadText}>{item.name}</Text>
+            <Text style={styles.listHeadText}>{item.name ?? "Loading.."}</Text>
             <View style={styles.row}>
-              <Text style={styles.listData}>{item.building}</Text>
-              <Text style={styles.listData2}>{item.condition}</Text>
+              <Text style={styles.listData}>{item.building ?? "Loading.."}</Text>
+              <Text style={styles.listData2}>{item.condition ?? "Loading.."}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.listData}>{item.date}</Text>
-              <Text style={[{ backgroundColor: getStatusBackground(item.status), color: getStatusTextColor(item.status)}, styles.statusBackground]}>{item.status}</Text>
+              <Text style={styles.listData}>{item.date ?? "Loading.."}</Text>
+              <Text style={[{ backgroundColor: getStatusBackground(item.status), color: getStatusTextColor(item.status)}, styles.statusBackground]}>{item.status ?? "Loading.."}</Text>
             </View>
             
           </View>

@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
 import { Image, StyleSheet, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 //import { View } from 'react-native-reanimated/lib/typescript/Animated';
 
@@ -10,7 +11,7 @@ export default function HomeScreen() {
 
         <View style={styles.logo}>
           <Image
-            source={require('../assets/images/logo.png')}
+            source={require('../assets/images/dmlogo.png')}
             style={styles.ImageStyle}
           />
           <Text style={[styles.companyName, styles.textColor]}>Meyer Group</Text>
@@ -42,6 +43,8 @@ export default function HomeScreen() {
             </View>
 
         </Link>
+
+        
           
       </View>
   );
@@ -74,6 +77,7 @@ const styles = StyleSheet.create({
     //marginTop: 10,
     marginBottom: 10,
     //marginLeft: 10,
+    transform: "scale(1.3)",
   },
   companyName: {
     fontFamily: "Arial",

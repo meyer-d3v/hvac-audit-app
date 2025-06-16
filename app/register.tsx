@@ -1,7 +1,10 @@
+import { useUser } from '@/context/userContext';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { router } from 'expo-router';
+import { addDoc, collection } from 'firebase/firestore';
 import { useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { db } from '../firebase';
 
 export default function TabTwoScreen() {
   
@@ -16,10 +19,49 @@ export default function TabTwoScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleRegister = () => {
-    console.log("User: ", name, " has registered.");
-    router.push("/(tabs)/dashboard");
-  };
+  const handleRegister = async () => {
+
+    //TODO: ADD VALIDATION
+    const { setUser } = useUser() || {};
+
+    console.log("User: ", name, " is attempting to register.");
+    
+
+    try {
+
+      await addDoc(collection(db, 'users'), {
+        'firstName': name,
+        'lastName': surname,
+        'number': number,
+        'email': email,
+        'password': password,
+      });
+
+      if (setUser) {
+          setUser({name: name, email: email, number: number});
+        }
+
+      
+        setName("");
+        setSurname("");
+        setEmail("");
+        setNumber("");
+        setPassword("");
+        setConfirmPassword("");
+
+      alert("User has been added succesfully.");
+      router.push("/loading");
+
+    } catch (error) {
+        
+        alert("Error: " + error);
+    }
+
+  }
+
+  
+  
+
 
   return (
 

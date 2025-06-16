@@ -4,6 +4,9 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
 //import { SafeAreaView } from 'react-native-safe-area-context';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { useUser } from '../context/userContext';
+import { db } from '../firebase';
 
 
 
@@ -12,9 +15,12 @@ export default function TabTwoScreen() {
   const compEmail = "meyerdean.developer@gmail.com";
   const compPassword = "admin";
 
+  const { setUser } = useUser() || {};
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  /*
   const handleLogin = () => {
     console.log("Email: ", email);
     console.log("Password: ", password);
@@ -31,6 +37,59 @@ export default function TabTwoScreen() {
     }
   }
 
+  */
+
+  const handleLogin = async () => {
+
+    //TODO: ADD VALIDATION
+
+    if (email == "admin" && password == "admin") {
+      
+      //alert("You signed in with an admin account.");
+      console.log("Admin account has been signed in.");
+      if (setUser) {
+          setUser({name: "admin", email: "admin@gmail.com", number: "1234567890"});
+        }
+      router.push("/loading");
+
+      return;
+    };
+    
+
+    const q = query(collection(db, 'users'), where('email', '==', email));
+
+    const results = await getDocs(q);
+
+    if (results.empty) {
+      alert("No users were found.");
+    } else {
+
+      results.forEach((users) => {
+        const user = users.data();
+
+        if (user.email === email && user.password === password) {
+          alert("You have been logged in.");
+          if (setUser) {
+            setUser({name: user.firstName, email: user.email, number: user.number});
+          } 
+          router.push("/(tabs)/dashboard");
+        } else {
+          alert("You are not in the db");
+        }
+      })
+    }
+
+    setEmail("");
+    setPassword("");
+
+    
+
+
+      
+   
+
+
+  }
 
 
   return (

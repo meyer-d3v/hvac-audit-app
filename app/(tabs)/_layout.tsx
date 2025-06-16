@@ -41,7 +41,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="newAudit"
+        name="new-audit"
         options={{
           title: 'New Audit',
           headerShown: false,
@@ -77,6 +77,7 @@ export default function TabLayout() {
       />
     </Tabs>
 
+        
     
   );
 }
