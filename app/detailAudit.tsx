@@ -231,8 +231,8 @@ export default function TabTwoScreen() {
 
 const styles = StyleSheet.create({
   mainContainer: {
-    //backgroundColor: "#f4f3f5",
-    backgroundColor: Colors.dark.backgroundColor,
+    backgroundColor: "#f4f3f5",
+    //backgroundColor: Colors.dark.backgroundColor,
     height: "100%",
   },
   headTitleContainer: {

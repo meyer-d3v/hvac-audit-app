@@ -1,7 +1,5 @@
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 
-//export const UserContext = createContext(null);
-
 interface UserProviderProps {
     children: ReactNode,
 }

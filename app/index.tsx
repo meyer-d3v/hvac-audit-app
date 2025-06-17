@@ -1,8 +1,5 @@
 import { Link } from 'expo-router';
 import { Image, StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
-
-//import { View } from 'react-native-reanimated/lib/typescript/Animated';
 
 export default function HomeScreen() {
   return (
