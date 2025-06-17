@@ -89,12 +89,15 @@ You can scan the QR code with **Expo Go** to test the app on your physical devic
 
 ## 📸 Screenshots
 
-> (Replace with your actual app screenshots or add links)
+> ![Primary Screens](./assets/screens/AllScreens.png)
 > 
 - Welcome Screen
-- Login/Register
 - Dashboard with audits
 - Create New Audit Form
+- Add Equipment Form
+- Audit Reports
+- View Audit Details
+- Help & Support
 
 ---
 
