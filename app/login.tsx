@@ -1,12 +1,13 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 //import { TextInput } from 'react-native-gesture-handler';
 //import { View } from 'react-native-reanimated/lib/typescript/Animated';
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
 //import { SafeAreaView } from 'react-native-safe-area-context';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useUser } from '../context/userContext';
-import { db } from '../firebase';
+import { auth, db } from '../firebase';
 
 
 
@@ -19,6 +20,7 @@ export default function TabTwoScreen() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   /*
   const handleLogin = () => {
@@ -38,6 +40,37 @@ export default function TabTwoScreen() {
   }
 
   */
+
+  const signIn = async () => {
+
+    setLoading(true);
+
+    try {
+
+      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password.trim());
+      const user = userCredential.user;
+      console.log("User signed up:", user.uid);
+
+      if (setUser) {
+        setUser({
+          name: auth.currentUser?.displayName?.slice(0, (auth.currentUser?.displayName?.search(" ") ?? 0) - 1) || "User",
+          email: email,
+          number: (auth.currentUser?.phoneNumber?.toString()) || "No Number",
+        });
+      }
+
+      router.push({
+        pathname: "/loading",
+        params: {state: "User has been logged in succesfully."}
+      });
+
+    } catch (error) {
+      alert("Error logging in: " + error);
+    } finally {
+      setLoading(false);
+    }
+
+  }
 
   const handleLogin = async () => {
 
@@ -122,11 +155,11 @@ export default function TabTwoScreen() {
         
       </View>
 
-      <Pressable onPress={handleLogin} style={styles.buttonContainer}>
+      <Pressable onPress={signIn} style={styles.buttonContainer}>
 
-
-          <Text style={styles.buttonText}>Log In</Text>
-
+          {loading ?
+          ( <ActivityIndicator size={"large"} color={"#ffffff"}/> ) :
+          ( <Text style={styles.buttonText}>Log In</Text> ) }
 
       </Pressable>
 

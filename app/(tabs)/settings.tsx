@@ -1,8 +1,8 @@
-import { router } from 'expo-router';
-import { Image, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { userData } from "../../data/userData";
 import { useUser } from "@/context/userContext";
-
+import { router } from 'expo-router';
+import { signOut } from 'firebase/auth';
+import { Image, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { auth } from '../../firebase';
 
 export default function TabTwoScreen() {
 
@@ -10,9 +10,19 @@ export default function TabTwoScreen() {
   const user = userContext?.user;
 
   const handleLogOut = () => {
-    router.replace("/login");
+    
   };
 
+  const handleSignOut = async () => {
+    try{
+
+      await signOut(auth);
+      router.replace("/login");
+
+    } catch (error) {
+      alert("Could not sign out: " + error);
+    }
+  }
   
 
 
@@ -20,7 +30,7 @@ export default function TabTwoScreen() {
 
     <SafeAreaView style={styles.mainContainer}>
 
-      <Pressable onPress={handleLogOut} style={styles.buttonContainer}>
+      <Pressable onPress={handleSignOut} style={styles.buttonContainer}>
       
           <Text style={styles.buttonText}>Log Out</Text>
       
@@ -30,17 +40,17 @@ export default function TabTwoScreen() {
 
         <Image 
             source={require('../../assets/images/default_pfp.png')} 
-            style={[ styles.image]} 
+            style={[ styles.image ]} 
           />
       </View>
 
-      <Text style={styles.nameText}>{user?.name ?? "Guest"}</Text>
+      <Text style={styles.nameText}>{auth.currentUser?.displayName?.slice(0, (auth.currentUser?.displayName?.search(" ") ?? 0) - 1) ?? "Guest"}</Text>
 
       <View style={styles.informationContainer}>
         <Text style={styles.emailTextHeader}>Email: </Text>
-        <Text style={styles.emailText}>{user?.email ?? "No email"}</Text>
+        <Text style={styles.emailText}>{auth.currentUser?.email ?? "No email"}</Text>
         <Text style={styles.numberTextHeader}>Phone number: </Text>
-        <Text style={styles.numberText}>{user?.number ?? "No number"}</Text>
+        <Text style={styles.numberText}>{auth.currentUser?.phoneNumber ?? "No number"}</Text>
       </View>
 
       

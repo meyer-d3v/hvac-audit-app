@@ -1,10 +1,12 @@
 import { useUser } from '@/context/userContext';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { router } from 'expo-router';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { addDoc, collection } from 'firebase/firestore';
 import { useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { db } from '../firebase';
+import { ActivityIndicator, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import Toast from 'react-native-toast-message';
+import { auth, db } from '../firebase';
 
 export default function TabTwoScreen() {
   
@@ -18,11 +20,13 @@ export default function TabTwoScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleRegister = async () => {
 
     //TODO: ADD VALIDATION
     const { setUser } = useUser() || {};
+    //const uid = auth.currentUser?.uid;
 
     console.log("User: ", name, " is attempting to register.");
     
@@ -56,6 +60,65 @@ export default function TabTwoScreen() {
         
         alert("Error: " + error);
     }
+
+  }
+
+  const signUp = async () => {
+
+    setLoading(true);
+
+    try{
+
+      const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password.trim());
+      const user = userCredential.user;
+      console.log("User signed up:", user.uid);
+
+      /*
+
+      await addDoc(collection(db, 'users', user.uid), {
+        'firstName': name,
+        'lastName': surname,
+        'number': number,
+        'email': email,
+        'password': password,
+      });
+
+      */
+
+      setName("");
+      setSurname("");
+      setEmail("");
+      setNumber("");
+      setPassword("");
+      setConfirmPassword("");
+
+      if (auth.currentUser) {
+        await updateProfile(auth.currentUser, {
+          displayName: name + " " + surname,
+        });
+      }
+
+      router.push({
+        pathname: "/loading",
+        params: {state: "User has been added succesfully."}
+      });
+
+    } catch (error) {
+
+      console.log("Error signing up", error);
+
+      Toast.show({
+        type: "error",
+        text1: "error",
+        text2: "User could not be added to database.",
+      })
+
+    } finally {
+
+      setLoading(false);
+      
+    }
+
 
   }
 
@@ -145,10 +208,11 @@ export default function TabTwoScreen() {
                     secureTextEntry={true}/>
         </View>
 
-        <Pressable onPress={handleRegister} style={styles.buttonContainer}>
+        <Pressable onPress={signUp} style={styles.buttonContainer}>
         
-        
-            <Text style={styles.registerButtonText}>Register</Text>
+            {loading ?
+              ( <ActivityIndicator size={"large"} color={"#ffffff"}/> ) :
+            (<Text style={styles.registerButtonText}>Register</Text>) }
   
   
         </Pressable>

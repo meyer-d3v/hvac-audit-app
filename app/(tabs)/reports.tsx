@@ -1,12 +1,24 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import * as FileSystem from 'expo-file-system';
+import * as Print from 'expo-print';
 import { router } from "expo-router";
-import { collection, getDocs } from 'firebase/firestore';
+import * as Sharing from 'expo-sharing';
+import { collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { db } from "../../firebase";
-//import RNHTMLtoPDF from 'react-native-html-to-pdf';
 
 export default function TabTwoScreen() {
+
+  const [equipment, setEquipment] = useState<{ id: string; [key: string]: any }[]>();
+  const [amountEquipment, setAmountEquipment] = useState("");
+  const [operational, setOperation] = useState("");
+  const [nonOperation, setNonOperational] = useState("");
+  const [loadingPDF, setLoadingPDF] = useState<string>("");
+  const [loadingDelete, setLoadingDelete] = useState<string>("");
+  const [loadingEquipment, setLoadingEquipment] = useState<string>("");
+  
 
  
 
@@ -68,6 +80,10 @@ export default function TabTwoScreen() {
   */
 
   useEffect(() => {
+    getAudit();
+  }, []);
+
+  
 
     const getAudit = async () => {
 
@@ -107,20 +123,195 @@ export default function TabTwoScreen() {
     }
 
 
-    getAudit();
-  }, []);
 
-   const seeEquipment = (auditID: string, location: string, date: string) => {
+   const seeEquipment = async (auditID: string, location: string, date: string) => {
 
-     router.push({
-      pathname: "../detailAudit",
-      params: { 
-        auditId: auditID, 
-        auditLocation: location,
-        auditDate: date,
-       },
+    setLoadingEquipment(auditID);
+
+     try{
+
+      router.push({
+        pathname: "../detailAudit",
+        params: { 
+          auditId: auditID, 
+          auditLocation: location,
+          auditDate: date,
+        },
      });
+
+     } catch (error) {
+
+      Toast.show({
+        type: "error", 
+        text1: "Error",
+        text2: (error as Error).toString(),
+      })
+
+     } finally {
+
+      setLoadingEquipment("");
+
+     }
    }
+
+  const deleteAudit = async (auditID: string) => {
+
+    setLoadingDelete(auditID);
+
+    try{
+
+      await deleteDoc(doc(db, "audits", auditID));
+
+      const q = await query(collection(db, "equipment"), where("auditId", "==", auditID));
+
+      const results = await getDocs(q);
+
+      results.docs.forEach(async (item) => {
+        await deleteDoc(doc(db, "equipment", item.id));
+      })
+
+      Toast.show({
+        type: "success", 
+        text1: "Deleted",
+        text2: "Successfully deleted audit.",
+      });
+
+      await getAudit();
+
+      
+
+    } catch (error) {
+
+      Toast.show({
+        type: "error", 
+        text1: "Error",
+        text2: (error as Error).toString(),
+      })
+    } finally {
+
+      setLoadingDelete("");
+
+    }
+   }
+
+   const generatePDF = async (auditData: any) => {
+
+      setLoadingPDF(auditData.id);
+
+      var equipmentHTMLContent = `<div>All equipment:</div>
+                                <br>
+                                `;
+      var fileName = ``;
+
+      try{
+
+          
+    
+          const q = await query(collection(db, "equipment"), where("auditId", "==", auditData.id));
+          
+
+          const equipmentArray : { id: string; [key: string]: any }[] = [];
+          let operationalAmount = 0, nonOperationAmount = 0;
+
+          const results = await getDocs(q);
+          
+          results.forEach((doc) => {
+              equipmentArray.push({id: doc.id, ...doc.data()});
+
+              if (doc.data().status === "operational") {
+                operationalAmount++;
+                setOperation(operationalAmount.toString());
+              } else {
+                nonOperationAmount++;
+                setNonOperational(nonOperationAmount.toString());
+              }
+
+              equipmentHTMLContent += ` 
+                  <div><strong>Name: </strong>${doc.data().equipmentName}</div>
+                  <div><strong>Serial Number: </strong>${doc.data().serialNumber}</div>
+                  <div><strong>Model: </strong>${doc.data().model}</div>
+                  <div><strong>Status: </strong>${doc.data().status}</div>
+                  <div><strong>Condition: </strong>${doc.data().equipmentCondition}</div>
+                  <div><strong>Budget: </strong>${doc.data().budget}</div>
+                  <div><strong>Notes: </strong>${doc.data().notes}</div>
+                  <br>
+                  <br>
+                `
+
+              
+
+              
+                
+          });
+
+          equipmentHTMLContent += `<div>====================================</div>
+                              <div>end of equipment</div>`;
+
+          setEquipment(equipmentArray);
+
+      } catch (error) {
+
+          alert("Failed to get equipment data. Error: " + error);
+          console.log(error);
+
+      }
+
+    setEquipment([]);
+
+    fileName = `Audit_Report_${auditData.auditName}.pdf`;
+    var fileURI = FileSystem.documentDirectory + fileName;
+
+    console.log(fileName);
+    console.log(fileURI);
+
+    
+
+    const htmlContent = `
+    
+      <DOCTYPE html>
+      <html lang="en">
+        <head>
+
+          <title>PDF Export</title>
+
+        </head>
+        <body>
+
+          <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              h1 { color: #004080; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+              .page-break { page-break-before: always; }
+          </style>
+
+          <h1>${auditData.siteName}</h1>
+
+          <h1>Audit Report - ${auditData.auditName}</h1>
+          <p><strong>Date:</strong> ${auditData.createdOn}</p>
+          <p><strong>Status:</strong> ${auditData.status}</p>
+          <p><strong>Performed By:</strong> ${auditData.performedBy}</p>
+
+          <div class="page-break"></div>
+
+          <div>${equipmentHTMLContent}</div>
+
+        </body>
+      </html>
+    
+    
+    `
+
+    const { uri } = await Print.printToFileAsync({ html: htmlContent });
+    await FileSystem.moveAsync({ from: uri, to: fileURI});
+    setLoadingPDF("");
+    await Sharing.shareAsync(fileURI);
+
+    
+
+   }
+
+   
 
   return (
 
@@ -163,10 +354,43 @@ export default function TabTwoScreen() {
                     }}
                       style={styles.buttonContainer}>
 
-                        <Text style={styles.buttonText}>See details</Text>
+                        {loadingEquipment === item.id ?
+                        (<ActivityIndicator size={"large"} color={"#ffffff"}/>) :
+                        (<Text style={styles.buttonText}>See details</Text>)}
 
                     </Pressable>
               </View>
+
+              <View style={styles.btnExportContainer}>
+                    
+                    <Pressable onPress={() => {
+                      generatePDF(item);
+                    }}
+                      style={styles.buttonContainer}>
+
+                        {loadingPDF === item.id ? 
+                        (<ActivityIndicator size={"large"} color={"#ffffff"}/>) :
+                        (<Text style={styles.buttonText}>Export PDF</Text>)}
+
+                    </Pressable>
+              </View>
+
+              <View style={styles.btnExportContainer}>
+                    
+                    <Pressable onPress={() => {
+                      deleteAudit(item.id);
+                      
+                    }}
+                      style={styles.buttonContainer}>
+
+                        {loadingDelete === item.id ? 
+                        (<ActivityIndicator size={"large"} color={"#ffffff"}/>) :
+                        (<Text style={styles.buttonText}>Delete</Text>)}
+
+                    </Pressable>
+              </View>
+
+              
  
             </View>
           )}></FlatList>
@@ -307,5 +531,14 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     marginBottom: 5,
+  },
+  btnExportContainer: {
+    marginTop: 20,
+    display: "flex",
+    //justifyContent: "flex-end",
+    flexDirection: "column",
+    //alignSelf: "center",
+    alignContent: "flex-end",
+    alignItems: "flex-end",
   }
 });

@@ -1,14 +1,15 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 export default function LoadingScreen() {
   const router = useRouter();
+  const { state } = useLocalSearchParams();
 
   Toast.show({
               type: 'success',
-              text1: 'Successfully logged in',
+              text1: state.toString(),
               //text2: 'Logged in with admin account',
               position: 'top',
             });

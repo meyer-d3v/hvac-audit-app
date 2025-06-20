@@ -1,9 +1,11 @@
 import Feather from '@expo/vector-icons/Feather';
+import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from 'expo-router';
 import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
+import Toast from 'react-native-toast-message';
 import { db } from "../firebase";
 
 export default function TabTwoScreen() {
@@ -80,6 +82,48 @@ export default function TabTwoScreen() {
   const [budget, setBudget] = useState("");
   const [notes, setNotes] = useState("");
   const [attachments, setAttachments] = useState("");
+
+  const getImage = async () => {
+
+
+    try{
+
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Permission denied!');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      setAttachments(result.assets[0].uri);
+      console.log(result.assets[0].uri);
+
+      result.assets.forEach((asset) => {
+        console.log(asset.uri); // 👈 this is the image path
+        // You can now upload or display each image
+      });
+    }
+
+
+    } catch (error) {
+
+      Toast.show({
+        type: "error",
+        text1: "Error uploading image: ",
+        text2: (error as Error).toString(),
+      })
+
+    }
+
+  }
 
   const createAudit = async () => {
 
@@ -291,7 +335,7 @@ export default function TabTwoScreen() {
           <Text style={styles.imageTextBig}>Drag & drop files here, or click to browse</Text>
           <Text style={styles.imageTextSmall}>Supports PDF, JPG, PNG (max 10MB)</Text>
 
-          <Pressable onPress={uploadFiles}
+          <Pressable onPress={getImage}
             style={styles.uploadButton}>
             <Text style={styles.buttonText}>Select Files</Text>
           </Pressable>
