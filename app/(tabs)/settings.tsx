@@ -50,7 +50,7 @@ export default function TabTwoScreen() {
         <Text style={styles.emailTextHeader}>Email: </Text>
         <Text style={styles.emailText}>{auth.currentUser?.email ?? "No email"}</Text>
         <Text style={styles.numberTextHeader}>Phone number: </Text>
-        <Text style={styles.numberText}>{auth.currentUser?.phoneNumber ?? "No number"}</Text>
+        <Text style={styles.numberText}>{user?.number ?? "No number"}</Text>
       </View>
 
       
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f4f3f5",
   },
   buttonContainer: {
-    backgroundColor: "#1e88e5",
+    backgroundColor: "#F44336",
     color: "#ffffff",
     fontSize: 20,
     width: "30%",

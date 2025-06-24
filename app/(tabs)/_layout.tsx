@@ -40,14 +40,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <MaterialIcons name="dashboard" size={24} color={color}/>,
         }}
       />
-      <Tabs.Screen
-        name="new-audit"
-        options={{
-          title: 'New Audit',
-          headerShown: false,
-          tabBarIcon: ({ color }) => <Fontisto name="plus-a" size={24} color={color} />,
-        }}
-      />
 
       <Tabs.Screen
         name="reports"
@@ -57,6 +49,17 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <MaterialIcons name="description" size={24} color={color} />,
         }}
       />
+      
+      <Tabs.Screen
+        name="new-audit"
+        options={{
+          title: 'New Audit',
+          headerShown: false,
+          tabBarIcon: ({ color }) => <Fontisto name="plus-a" size={24} color={color} />,
+        }}
+      />
+
+      
 
       <Tabs.Screen
         name="settings"

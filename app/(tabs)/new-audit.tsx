@@ -1,9 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from "expo-router";
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, Timestamp } from 'firebase/firestore';
 import React, { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from 'react-native-toast-message';
 import { db } from "../../firebase";
 
 export default function NewAuditScreen() {
@@ -11,6 +12,7 @@ export default function NewAuditScreen() {
     const [siteName, setSiteName] = useState("");
     const [performedBy, setPerformedBy] = useState("");
     const [date, setDate] = useState("");
+    const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
         
@@ -28,8 +30,15 @@ export default function NewAuditScreen() {
 
     const startAudit = async () => {
 
+        setLoading(true);
+
         if (siteName.trim() == "" || performedBy.trim() == "" || date.trim() == "") {
-            alert("Please enter all fields.");
+            Toast.show({
+              type: "error",
+              text1: "Unable to start audit.",
+              text2: "Please enter all fields",
+            });
+            setLoading(false);
             return;
         };
 
@@ -38,9 +47,9 @@ export default function NewAuditScreen() {
         try{
             const newAudit = await addDoc(collection(db, "audits"), {
                 'auditName': siteName[0] + performedBy[0] + "-" + (new Date().getFullYear()),
-                'siteName': siteName,
-                'performedBy': performedBy,
-                'createdOn': date,
+                'siteName': siteName.trim(),
+                'performedBy': performedBy.trim(),
+                'createdOn': Timestamp.fromDate(new Date()),
                 'status': "In Progress",
             });
 
@@ -60,6 +69,15 @@ export default function NewAuditScreen() {
         } catch (error) {
             console.log("Error trying to start audit.");
             console.log(error);
+            Toast.show({
+              type: "error",
+              text1: "Unable to start audit.",
+              text2: "Please try again."
+            });
+        } finally {
+
+          setLoading(false);
+
         }
 
         
@@ -118,6 +136,7 @@ export default function NewAuditScreen() {
                         style={styles.input}
                         //placeholder="e.g. Building A, Floor 3"
                         placeholderTextColor="#919191"
+                        readOnly={true}
                         value={date}
                         onChangeText={setDate}
                         />
@@ -126,7 +145,10 @@ export default function NewAuditScreen() {
 
             <Pressable onPress={startAudit} style={styles.startButton}>
 
-                <Text style={styles.buttonText}>Start Audit</Text>
+                {loading ? 
+                (<ActivityIndicator size={"large"} color={"#ffffff"}/>) :
+                (<Text style={styles.buttonText}>Start Audit</Text>)
+                }
 
             </Pressable>
 
@@ -202,6 +224,7 @@ const styles = StyleSheet.create({
     height: "55%",
     paddingHorizontal: 10,
     color: "#000",
+    fontSize: 16,
   },
   startButton: {
     backgroundColor: "#1e88e5",

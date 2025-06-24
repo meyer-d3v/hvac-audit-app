@@ -73,17 +73,18 @@ export default function TabTwoScreen() {
       const user = userCredential.user;
       console.log("User signed up:", user.uid);
 
-      /*
+      
 
-      await addDoc(collection(db, 'users', user.uid), {
-        'firstName': name,
-        'lastName': surname,
-        'number': number,
-        'email': email,
-        'password': password,
+      await addDoc(collection(db, 'users'), {
+        'firstName': name.trim(),
+        'lastName': surname.trim(),
+        'number': number.trim(),
+        'email': email.trim(),
+        'password': password.trim(),
+        'user_id': user.uid,
       });
 
-      */
+      
 
       setName("");
       setSurname("");

@@ -2,15 +2,19 @@ import Feather from '@expo/vector-icons/Feather';
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from 'expo-router';
 import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
-import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Toast from 'react-native-toast-message';
 import { db } from "../firebase";
 
 export default function TabTwoScreen() {
 
+  const ScrollViewRef = useRef<ScrollView>(null);
   const { auditId } = useLocalSearchParams();
+  const [imageArray, setImageArray] = useState<{name: string ; uri: string}[]>([]);
+  const arrImages : { name: string; uri: string }[] = [];
+
 
   console.log(auditId);
 
@@ -39,38 +43,6 @@ export default function TabTwoScreen() {
     { label: 'Not Operational', value: 'not-operational' },
   ]);
 
-  const uploadFiles = () => {
-      console.log("User wants to upload some files.");
-  };
-
-  const saveDraft = () => {
-      console.log("User wants to go to the dashboard.");
-      alert("Audit will remain as 'In progress'.");
-      router.replace("/(tabs)/dashboard");
-  };
-
-  const saveCompleted = async () => {
-      console.log("User wants to save the data as a draft");
-
-      const getAudit = doc(db, "audits", Array.isArray(auditId) ? auditId[0] : auditId as string);
-
-      try{
-
-        await updateDoc(getAudit, {
-          status: "Completed",
-        });
-
-      } catch (error) {
-        console.log("Error updating audit to 'completed'.");
-        console.log(error);
-      }
-
-
-
-      router.push("/(tabs)/dashboard");
-
-  };
-
   const [equipmentName, setEquipmentName] = useState("");
   //const [location, setLocation] = useState("");
   const [model, setModel] = useState("");
@@ -83,8 +55,51 @@ export default function TabTwoScreen() {
   const [notes, setNotes] = useState("");
   const [attachments, setAttachments] = useState("");
 
+  const clearImageArray = () => {
+    setImageArray([]);
+  };
+
+
+  const saveDraft = () => {
+      clearImageArray;
+      console.log("User wants to go to the dashboard.");
+      router.replace("/(tabs)/reports");
+      Toast.show({
+        type: "info",
+        text1: "Success",
+        text2: "Report save as 'In Progress'",
+      });
+  };
+
+  const saveCompleted = async () => {
+      console.log("User wants to save the data as a draft");
+
+      const getAudit = doc(db, "audits", Array.isArray(auditId) ? auditId[0] : auditId as string);
+
+      try{
+
+        await updateDoc(getAudit, {
+          status: "Completed",
+        });
+        clearImageArray;
+
+      } catch (error) {
+        console.log("Error updating audit to 'completed'.");
+        console.log(error);
+      }
+
+
+
+      router.push("/(tabs)/reports");
+
+  };
+
+  
+
   const getImage = async () => {
 
+    //const arrayForImages : { imageName: String }[] = [];
+    const arrayForImages : { name: any; uri: string }[] = [];
 
     try{
 
@@ -100,17 +115,24 @@ export default function TabTwoScreen() {
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.7,
-    });
-
-    if (!result.canceled) {
-      setAttachments(result.assets[0].uri);
-      console.log(result.assets[0].uri);
-
-      result.assets.forEach((asset) => {
-        console.log(asset.uri); // 👈 this is the image path
-        // You can now upload or display each image
       });
-    }
+
+      if (!result.canceled) {
+        setAttachments(result.assets[0].uri);
+        console.log(result.assets[0].uri);
+
+        result.assets.forEach((asset) => {
+          console.log(asset.uri); // 👈 this is the image path
+          console.log(asset.fileName)
+          // You can now upload or display each image
+          arrayForImages.push({ name: asset.fileName, uri: asset.uri });
+
+          console.log("arrImage length: " + arrImages.length);
+        });
+      }
+
+      setImageArray(prev => [...prev, ...arrayForImages]);
+      
 
 
     } catch (error) {
@@ -125,21 +147,21 @@ export default function TabTwoScreen() {
 
   }
 
-  const createAudit = async () => {
+  const addEquipment = async () => {
 
     //TODO: add validation, add spinner 
 
     try{
 
         await addDoc(collection(db, 'equipment'), {
-        'equipmentName': equipmentName,
+        'equipmentName': equipmentName.trim(),
         //'location': location,
-        'model': model,
-        'serialNumber': serialNumber,
+        'model': model.trim(),
+        'serialNumber': serialNumber.trim(),
         'equipmentCondition': equipmentCondition,
         'status': status,
-        'budget': budget,
-        'notes': notes,
+        'budget': budget.trim(),
+        'notes': notes.trim(),
         'auditId': auditId,
         //'createdDate': new Date(),
       });
@@ -147,7 +169,11 @@ export default function TabTwoScreen() {
       //const audit = await query(collection(db, "audits"), where("id", "==", auditId));
 
 
-      alert(equipmentName + " has been added.");
+      Toast.show({
+        type: "success",
+        text1: "Success",
+        text2: equipmentName + " has been successfully added.",
+      });
       
       setEquipmentName("");
       //setLocation("");
@@ -157,13 +183,28 @@ export default function TabTwoScreen() {
       setValueStatus(null);
       setBudget("");
       setNotes("");
+      //setImageArray([]);
+      clearImageArray;
+      
       
 
 
     } catch (error) {
       console.error("Could not add equipment.");
       console.error("Error: " + error);
-      alert("Error adding equipment. Error: " + error);
+
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: equipmentName + " could not be added. Try again.",
+      });
+
+    }
+  }
+
+  const scrollToTop = () => {
+    if (ScrollViewRef.current) {
+      ScrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true});
     }
   }
 
@@ -171,8 +212,7 @@ export default function TabTwoScreen() {
 
 
   return (
-
-    <ScrollView style={styles.mainContainer} nestedScrollEnabled={true}>
+    <ScrollView style={styles.mainContainer} nestedScrollEnabled={true} ref={ScrollViewRef}>
 
       <Pressable
               onPress={goBack}
@@ -326,37 +366,52 @@ export default function TabTwoScreen() {
 
       <View style={styles.imagePickerContainer}>
 
-        <Text style={styles.inputText}>Attachments</Text>
+         
+          <Text style={styles.inputText}>Attachments</Text>
 
-        <View style={styles.imagePicker}>
+          <View style={styles.imagePicker}>
 
           <Feather name="upload" size={34} color="#919191" style={styles.uploadIcon}/>
 
-          <Text style={styles.imageTextBig}>Drag & drop files here, or click to browse</Text>
-          <Text style={styles.imageTextSmall}>Supports PDF, JPG, PNG (max 10MB)</Text>
+          { imageArray.length == 0 ?
+          (
+          <View>
+            <Text style={styles.imageTextBig}>Drag & drop files here, or click to browse</Text>
+            <Text style={styles.imageTextSmall}>Supports PDF, JPG, PNG (max 10MB)</Text>
+            
+          </View>
+          ) 
+          :
+          (<FlatList
+            data={imageArray}
+            scrollEnabled={false}
+            keyExtractor={(item) => item.uri}
+            style={styles.flatlistContainer}
+            renderItem={({item}) => (
+
+                <Text style={styles.imageNameText}>{item.name}</Text>
+         
+          )}></FlatList>)}
+          
+          
+           
+          
 
           <Pressable onPress={getImage}
             style={styles.uploadButton}>
             <Text style={styles.buttonText}>Select Files</Text>
           </Pressable>
+          </View>
 
         </View>
 
+        
 
-      </View>
 
-      <Pressable onPress={createAudit} style={styles.createAuditButton}>
+      <Pressable onPress={() => { addEquipment(); scrollToTop(); }} style={styles.createAuditButton}>
       
       
           <Text style={styles.createAuditText}>Add equipment</Text>
-      
-      
-      </Pressable>
-
-      <Pressable onPress={saveCompleted} style={styles.saveCompletedButton}>
-      
-      
-          <Text style={styles.saveCompletedText}>Finish Audit</Text>
       
       
       </Pressable>
@@ -369,11 +424,15 @@ export default function TabTwoScreen() {
       
       </Pressable>
 
+      <Pressable onPress={saveCompleted} style={styles.saveCompletedButton}>
+      
+      
+          <Text style={styles.saveCompletedText}>Finish Audit</Text>
+      
+      
+      </Pressable>
 
-
-
-
-
+      
     </ScrollView>
     
   );
@@ -438,7 +497,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.35,
     height: "80%",
     paddingLeft: 20,
-    fontSize: 15,
+    fontSize: 16,
     textAlignVertical: "center",
     backgroundColor: "#ffffff",
     flexWrap: "wrap",
@@ -539,8 +598,8 @@ const styles = StyleSheet.create({
     //borderWidth: 1,
     borderRadius: 10,
     height: 55,
-    marginBottom: 20,
-    backgroundColor: "#5be827",
+    marginBottom: 105,
+    backgroundColor: "#02d610",
   },
   saveCompletedText: {
     color: "#ffffff",
@@ -555,14 +614,28 @@ const styles = StyleSheet.create({
     alignContent: "center",
     alignItems: "center",
     alignSelf: "center",
-    borderColor: "#1e88e5",
-    borderWidth: 1,
+    //borderColor: "#1e88e5",
+    backgroundColor: "#FBC02D",
+    //borderWidth: 1,
     borderRadius: 10,
     height: 55,
-    marginBottom: 105,
+    marginBottom: 20,
   },
   saveDraftText: {
-    color: "#1e88e5",
+    //color: "#1e88e5",
+    color: "#ffffff",
     fontSize: 20,
   },
+  flatlistContainer: {
+    width: "80%",
+    display: "flex",
+    //justifyContent: "flex-start",
+    textAlign: "left",
+    //alignItems: "center",
+  },
+  imageNameText: {
+    color: "#373737",
+    fontSize: 14,
+    fontWeight: 500,
+  }
 });

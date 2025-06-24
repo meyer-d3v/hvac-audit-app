@@ -19,7 +19,7 @@ export default function TabTwoScreen() {
   const [operational, setOperation] = useState("");
   const [nonOperation, setNonOperational] = useState("");
 
-  const { auditId, auditLocation, auditDate } = useLocalSearchParams();
+  const { auditId, auditLocation, auditDate } = useLocalSearchParams<any>();
 
   useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
@@ -119,7 +119,7 @@ export default function TabTwoScreen() {
         <Text style={styles.headTitle}>Equipment ({amountEquipment})</Text>
 
         <Text style={styles.locationText}>Location: <Text style={styles.auditInfo}>{auditLocation}</Text></Text>
-        <Text style={styles.dateText}>Audit Date: <Text style={styles.auditInfo}>{auditDate}</Text></Text>
+        <Text style={styles.dateText}>Audit Date: <Text style={styles.auditInfo}>{new Date(auditDate * 1000).toDateString()}</Text></Text>
 
       </View>
 
@@ -450,7 +450,8 @@ const styles = StyleSheet.create({
     color: "#373737",
     fontWeight: 500,
     padding: 10,
-    alignSelf: "center",
+    justifyContent: "flex-start",
+    //alignSelf: "center",
     //borderColor: "#ge2",
     //borderWidth: 2,
     backgroundColor: "#F8FAFC",

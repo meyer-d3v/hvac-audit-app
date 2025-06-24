@@ -51,13 +51,19 @@ export default function TabTwoScreen() {
       const user = userCredential.user;
       console.log("User signed up:", user.uid);
 
+      const q = await query(collection(db, "users"), where("email", "==", email.trim()));
+
+      const querySnapshot = await getDocs(q);
+
       if (setUser) {
         setUser({
-          name: auth.currentUser?.displayName?.slice(0, (auth.currentUser?.displayName?.search(" ") ?? 0) - 1) || "User",
+          name: querySnapshot.docs[0].data().firstName + " " + querySnapshot.docs[0].data().lastname,
           email: email,
-          number: (auth.currentUser?.phoneNumber?.toString()) || "No Number",
+          number: querySnapshot.docs[0].data().number || "No Number",
         });
-      }
+      };
+
+      console.log(useUser.toString());
 
       router.push({
         pathname: "/loading",
@@ -225,6 +231,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     height: 55,
     padding: 20,
+    fontSize: 16,
   },
   buttonContainer: {
     backgroundColor: "#1e88e5",

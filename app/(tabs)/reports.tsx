@@ -1,9 +1,10 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as FileSystem from 'expo-file-system';
 import * as Print from 'expo-print';
 import { router } from "expo-router";
 import * as Sharing from 'expo-sharing';
-import { collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -89,7 +90,13 @@ export default function TabTwoScreen() {
 
       try{
 
-        const q = await getDocs(collection(db, 'audits'));
+        
+
+        const querySnapshot = await query(collection(db, 'audits') ,orderBy('createdOn', 'desc'));
+
+        const q = await getDocs(querySnapshot);
+
+        //console.log(q.docs.length);
         
 
         if (q.empty) {
@@ -105,6 +112,7 @@ export default function TabTwoScreen() {
 
         q.docs.forEach((doc) => {
           audits.push({id: doc.id, ...doc.data()});
+          console.log(doc.data().createdOn)
         });
 
 
@@ -124,7 +132,7 @@ export default function TabTwoScreen() {
 
 
 
-   const seeEquipment = async (auditID: string, location: string, date: string) => {
+   const seeEquipment = async (auditID: string, location: string, date: number) => {
 
     setLoadingEquipment(auditID);
 
@@ -200,6 +208,16 @@ export default function TabTwoScreen() {
 
       var equipmentHTMLContent = `<div>All equipment:</div>
                                 <br>
+                                <table>
+                                  <tr>
+                                    <th>Name</th>
+                                    <th>Serial Number</th>
+                                    <th>Model</th>
+                                    <th>Status</th>
+                                    <th>Condition</th>
+                                    <th>Budget</th>
+                                    <th>Notes</th>
+                                  </tr>
                                 `;
       var fileName = ``;
 
@@ -227,33 +245,60 @@ export default function TabTwoScreen() {
               }
 
               equipmentHTMLContent += ` 
-                  <div><strong>Name: </strong>${doc.data().equipmentName}</div>
+
+                  <tr>
+                    <td>${doc.data().equipmentName}</td>
+                    <td>${doc.data().serialNumber}</td>
+                    <td>${doc.data().model}</td>
+                    <td>${doc.data().status}</td>
+                    <td>${doc.data().equipmentCondition}</td>
+                    <td>${doc.data().budget}</td>
+                    <td>${doc.data().notes}</td>
+                  </tr>
+
+                `
+
+                /*
+                <div><strong>Name: </strong>${doc.data().equipmentName}</div>
                   <div><strong>Serial Number: </strong>${doc.data().serialNumber}</div>
                   <div><strong>Model: </strong>${doc.data().model}</div>
                   <div><strong>Status: </strong>${doc.data().status}</div>
                   <div><strong>Condition: </strong>${doc.data().equipmentCondition}</div>
                   <div><strong>Budget: </strong>${doc.data().budget}</div>
                   <div><strong>Notes: </strong>${doc.data().notes}</div>
-                  <br>
-                  <br>
-                `
-
+                */
               
 
               
                 
           });
 
-          equipmentHTMLContent += `<div>====================================</div>
+          equipmentHTMLContent += `
+                              </table>
+                              <div>====================================</div>
                               <div>end of equipment</div>`;
 
           setEquipment(equipmentArray);
 
+          
+
       } catch (error) {
 
-          alert("Failed to get equipment data. Error: " + error);
           console.log(error);
 
+          Toast.show({
+            type: "error",
+            text1: "Error",
+            text2: "Failed to get equipment data. Try again."
+          })
+
+      } finally {
+
+        Toast.show({
+            type: "success",
+            text1: "Success",
+            text2: "Successfully created PDF",
+          });
       }
 
     setEquipment([]);
@@ -283,14 +328,21 @@ export default function TabTwoScreen() {
               table { width: 100%; border-collapse: collapse; margin-top: 20px; }
               th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
               .page-break { page-break-before: always; }
+              .frontPageContainer { display: "flex"; justify-content: "center"; align-items: "center"; width: 100%; }
           </style>
 
-          <h1>${auditData.siteName}</h1>
+          <div class="frontPageContainer">
 
-          <h1>Audit Report - ${auditData.auditName}</h1>
-          <p><strong>Date:</strong> ${auditData.createdOn}</p>
-          <p><strong>Status:</strong> ${auditData.status}</p>
-          <p><strong>Performed By:</strong> ${auditData.performedBy}</p>
+            <img src="${'../../assets/images/dmlogo.png'} width="50%" alt="Company Logo"/>
+
+            <h1>${auditData.siteName}</h1>
+
+            <h1>Audit Report - ${auditData.auditName}</h1>
+            <p><strong>Date:</strong> ${new Date(auditData.createdOn?.seconds * 1000).toDateString()}</p>
+            <p><strong>Status:</strong> ${auditData.status}</p>
+            <p><strong>Performed By:</strong> ${auditData.performedBy}</p>
+
+          </div>
 
           <div class="page-break"></div>
 
@@ -342,52 +394,63 @@ export default function TabTwoScreen() {
               
               <View style={styles.dateContainer}>
                 <FontAwesome5 name="calendar" size={20} style={styles.iconStyles}/>
-                <Text style={styles.dateText}>{item.createdOn}</Text>
+                <Text style={styles.dateText}>{new Date(item.createdOn?.seconds * 1000).toDateString()}</Text>
               </View>
 
               
               <View style={styles.btnStatusContainer}>
                     <Text style={[{ backgroundColor: getStatusBackground(item.status), color: getStatusTextColor(item.status)}, styles.statusBackground]}>{item.status}</Text>
-                    
-                    <Pressable onPress={() => {
-                      seeEquipment(item.id, item.siteName, item.createdOn);
-                    }}
-                      style={styles.buttonContainer}>
+              </View>    
 
-                        {loadingEquipment === item.id ?
-                        (<ActivityIndicator size={"large"} color={"#ffffff"}/>) :
-                        (<Text style={styles.buttonText}>See details</Text>)}
+              <View style={styles.informationContainer}>
 
-                    </Pressable>
-              </View>
-
-              <View style={styles.btnExportContainer}>
-                    
-                    <Pressable onPress={() => {
-                      generatePDF(item);
-                    }}
-                      style={styles.buttonContainer}>
-
-                        {loadingPDF === item.id ? 
-                        (<ActivityIndicator size={"large"} color={"#ffffff"}/>) :
-                        (<Text style={styles.buttonText}>Export PDF</Text>)}
-
-                    </Pressable>
-              </View>
-
-              <View style={styles.btnExportContainer}>
-                    
-                    <Pressable onPress={() => {
-                      deleteAudit(item.id);
+                <Pressable onPress={() => {
+                        seeEquipment(item.id, item.siteName, item.createdOn.seconds);
+                      }}
+                      style={styles.seeDetails}>
                       
-                    }}
-                      style={styles.buttonContainer}>
+                      <View style={styles.buttonContainer}>
 
-                        {loadingDelete === item.id ? 
-                        (<ActivityIndicator size={"large"} color={"#ffffff"}/>) :
-                        (<Text style={styles.buttonText}>Delete</Text>)}
+                          {loadingEquipment === item.id ?
 
-                    </Pressable>
+                          (<ActivityIndicator size={"small"} color={"#1e88e5"}/>) 
+                          :
+                          (<View style={styles.seeDetailsContainer}>
+                          <FontAwesome5 name="eye" size={20} color="#1e88e5" />
+                          <Text style={styles.buttonText}>See details</Text>
+                          </View>
+                        )}
+                      </View>
+                </Pressable>
+
+                <Pressable onPress={() => {
+                        generatePDF(item);
+                      }}
+                      style={styles.btnExportContainer}>
+                    
+                    <View style={styles.buttonContainer}>
+
+                          {loadingPDF === item.id ? 
+                          (<ActivityIndicator size={"small"} color={"#364357"}/>) :
+                          (<FontAwesome5 name="file-export" size={20} color="#364357" style={{ paddingLeft: 10 }} />)}
+ 
+                    </View>
+                </Pressable>
+
+                <Pressable onPress={() => {
+                        deleteAudit(item.id);
+                      }}
+                  style={styles.btnDeleteContainer}>
+
+                      <View style={styles.buttonContainer}>
+
+                          {loadingDelete === item.id ? 
+                          (<ActivityIndicator size={"small"} color={"#DF3939"}/>) :
+                          (<MaterialIcons name="delete" size={22} color="#DF3939" />)}
+
+                      </View>
+                </Pressable>
+
               </View>
 
               
@@ -487,8 +550,7 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
   buttonContainer: {
-    backgroundColor: "#1e88e5",
-    width: "40%",
+    //width: "40%",
     height: 35,
     textAlignVertical: "center",
     borderRadius: 20,
@@ -499,9 +561,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     display: "flex",
     justifyContent: "center",
+    
+  },
+  btnDeleteContainer: {
+    backgroundColor: "#FEF2F2",
+    borderColor: "#DF3939",
+    borderWidth: 0.7,
+    //width: "40%",
+    height: 35,
+    textAlignVertical: "center",
+    borderRadius: 15,
+    //alignSelf: "flex-end",
+    textAlign: "center",
+    alignContent: "center",
+    verticalAlign: "middle",
+    alignItems: "center",
+    display: "flex",
+    justifyContent: "center",
+    width: "20%",
   },
   buttonText: {
-    color: "#ffffff",
+    color: "#1e88e5",
     fontSize: 16,
     textAlign: "center",
     display: "flex",
@@ -510,6 +590,8 @@ const styles = StyleSheet.create({
     alignContent: "center",
     alignSelf: "center",
     verticalAlign: "middle",
+    fontWeight: 500,
+    marginLeft: 5,
   },
   btnStatusContainer: {
     display: "flex",
@@ -533,12 +615,42 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   btnExportContainer: {
-    marginTop: 20,
+    backgroundColor: "#F8FAFC",
+    borderColor: "#6B7585",
+    borderWidth: 0.7,
+    //marginTop: 20,
     display: "flex",
-    //justifyContent: "flex-end",
-    flexDirection: "column",
-    //alignSelf: "center",
-    alignContent: "flex-end",
-    alignItems: "flex-end",
+    textAlignVertical: "center",
+    borderRadius: 15,
+    //alignSelf: "flex-end",
+    textAlign: "center",
+    alignContent: "center",
+    verticalAlign: "middle",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "20%",
+    alignSelf: "center",
+
+  }, 
+  informationContainer: {
+    display: "flex",
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-around",
+    marginTop: 5,
+  },
+  seeDetails: {
+    display: "flex",
+    width: "50%",
+    backgroundColor: "#EFF6FF",
+    borderRadius: 15,
+    borderColor: "#1e88e5",
+    borderWidth: 0.7,
+    
+  },
+  seeDetailsContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-evenly",
   }
 });
