@@ -49,7 +49,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <MaterialIcons name="description" size={24} color={color} />,
         }}
       />
-      
+
       <Tabs.Screen
         name="new-audit"
         options={{
@@ -58,8 +58,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Fontisto name="plus-a" size={24} color={color} />,
         }}
       />
-
-      
 
       <Tabs.Screen
         name="settings"
@@ -80,7 +78,5 @@ export default function TabLayout() {
       />
     </Tabs>
 
-        
-    
   );
 }
